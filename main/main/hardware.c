@@ -8,11 +8,9 @@
 #include "hardware.h"
 #include "hardwareDef.h"
 
-void setRegBit(uint32_t address, uint32_t mask)
+void setRegBit(uint32_t *address, uint32_t mask)
 {
-	
-	*((uint32_t *)(address)) |= (mask);
-	
+	*address |= mask;	
 }
 
 void clrRegBit(uint32_t address, uint32_t mask)

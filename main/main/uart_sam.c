@@ -5,7 +5,7 @@
 *			   		                 											*
 *******************************************************************************/
 
-#include "uart.h"
+#include "uart_sam.h"
 #include "hardware.h"
 
 
@@ -20,6 +20,8 @@
 
 void hwUartConfig(uartConfig_t *uartConfig)
 {
+	
+	Pmc *pmc = PMC;
 	
 	//The UART pins are multiplexed with PIO lines. The programmer must first configure the corresponding PIO Controller to
 	//enable I/O line operations of the UART.	
@@ -36,7 +38,9 @@ void hwUartConfig(uartConfig_t *uartConfig)
 	//configure the PMC to enable the UART clock. Usually, the peripheral identifier used for this purpose is 1.
 	//enable peripheral clock
 	
-	setRegBit(PMC_PCER0, PID7 | PID10 | PID11 | PID12 | PID13);
+	
+	//TODO  FIX THIS
+	setRegBit(pmc->PMC_PCER0, PID7 | PID10 | PID11 | PID12 | PID13);
 
 	/* Disable PDC channel (Peripheral DMA Controller Channels) */
 	setRegBit(uartConfig->baseAddr + UART_PTCR, TXTDIS | RXTDIS );

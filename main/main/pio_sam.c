@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 
-#include "pio.h"
+#include "pio_sam.h"
 #include "hardwareDef.h"
 #include "hardware.h"
 
@@ -20,52 +20,52 @@
 *	                                                                           *
 *	Returns Nothing					                                           *
 *******************************************************************************/
- 
+
 void hwPinPioConfig(pinPioConfig_t *pinPioConfig)
 {
 	//enable peripheral clock
-	setRegBit(PMC_PCER0, PID9);
-				
+	Pmc *pmc = PMC;
+	//setRegBit(pmc->PMC_PCER0,PID9);
+	pmc->PMC_PCER0 |= PID9;
+
+
+	Pio *pio = pinPioConfig->port;
+	
 	if (pinPioConfig->dir == OUTPUT)
 	{		
-		// PIO Output Enable Register	
-		setRegBit(pinPioConfig->portAddr + PIO_OER, 1 << pinPioConfig->portPin);				
+		// PIO Output Enable Register
+		pio->PIO_OER |= (1 << pinPioConfig->portPin);				
+						
 		// PIO Clear Output Data Register	PIO_CODR
-		setRegBit(pinPioConfig->portAddr + PIO_CODR, 1 << pinPioConfig->portPin);
+		pio->PIO_CODR |= (1 << pinPioConfig->portPin);
 	}else
 	{
-
 		//disables interrupt
-		setRegBit(pinPioConfig->portAddr + PIO_IDR, 1 << pinPioConfig->portPin);
+		pio->PIO_IDR |= (1 << pinPioConfig->portPin);
 		//PIO Pull Up Enable Register
-		setRegBit(pinPioConfig->portAddr + PIO_PUER, 1 << pinPioConfig->portPin);
+		pio->PIO_PUER |= (1 << pinPioConfig->portPin);
 		//PIO Output Disable Register
-		setRegBit(pinPioConfig->portAddr + PIO_ODR, 1 << pinPioConfig->portPin);
-		
+		pio->PIO_ODR |= (1 << pinPioConfig->portPin);		
 	}
 
-	if (pinPioConfig->type == PIO)  //enable PIO or PERPHERIAL 
+	if (pinPioConfig->type == PIO)  //enable PIO or PERPHERIAL
 	{
-		setRegBit(pinPioConfig->portAddr + PIO_PER, 1 << pinPioConfig->portPin);
+		pio->PIO_PER |= (1 << pinPioConfig->portPin);
 	}else
 	{
-		setRegBit(pinPioConfig->portAddr + PIO_PDR, 1 << pinPioConfig->portPin);
+		pio->PIO_PDR |= (1 << pinPioConfig->portPin);
 	}
-
-	
-
-
 }
 
 
-void hwPinPioWrite(uint32_t portAddr, uint32_t portPin, uint8_t state)
-{
+void hwPinPioWrite(Pio * port, uint32_t portPin, uint8_t state)
+{		
 	if (state == HIGH)
-	{
-		setRegBit(portAddr + PIO_SODR, 1 << portPin);
+	{	
+		port->PIO_SODR |= (1 << portPin);
 	}else
 	{
-		setRegBit(portAddr + PIO_CODR,1 << portPin);
+		port->PIO_CODR |= (1 << portPin);
 	}
 
 
@@ -73,11 +73,11 @@ void hwPinPioWrite(uint32_t portAddr, uint32_t portPin, uint8_t state)
 }
 
 
-uint32_t hwPinPioRead(uint32_t portAddr, uint32_t portPin)
+uint32_t hwPinPioRead(Pio * port, uint32_t portPin)
 {
-    return (*((uint32_t *)(portAddr + PIO_PDSR)) & (1 << portPin)) >> portPin ;
+	return (*((uint32_t *)(port->PIO_PDSR)) & (1 << portPin)) >> portPin ;
 }
 
-	
-	
-	
+
+
+

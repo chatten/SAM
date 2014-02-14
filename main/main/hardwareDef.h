@@ -11,6 +11,7 @@
  * Defines registers and macros for use of the SAM4E processor.
  */
 #include <stdint.h>
+#include <sam4e16e.h>
  
 #ifndef SAM4E_H
 #define SAM4E_H
@@ -21,15 +22,8 @@
  
 
 
-// Base Bank Addresses
-#define PIO_A       (uint32_t)0x400E0E00
-#define PIO_B       (uint32_t)0x400E1000
-#define PIO_C       (uint32_t)0x400E1200
-#define PIO_D       (uint32_t)0x400E1400
-#define PIO_E       (uint32_t)0x400E1600
-
-
 // Register Offsets
+/*
 #define PIO_PER     (uint32_t)0x00000000
 #define PIO_PDR     (uint32_t)0x00000004
 #define PIO_PSR     (uint32_t)0x00000008
@@ -85,20 +79,17 @@
 #define PIO_PCIMR   (uint32_t)0x0000015C
 #define PIO_PCISR   (uint32_t)0x00000160
 #define PIO_PCRHR   (uint32_t)0x00000164
-
+*/
 
 #ifdef SAM4E_EK
 #define GREEN_LED_PIN	21
 #define BLUE_LED_PIN	00
 #define AMBER_LED_PIN	20 
 #define BP4_PIN			01
-#define BP4_PORT	(uint32_t)0x400E0E00
 #endif
 
 /* UART Controller *************************************************************/
-// Base Bank Addresses
-#define UART0		(uint32_t)0x400E0600
-#define UART1		(uint32_t)0x40060600
+
 // Register Offsets
 
 #define UART_CR		(uint32_t)0x00000000
@@ -132,8 +123,6 @@
 #define TXRDY		(1 << 1)
 #define TXEMPTY		(1 << 9)
 
-//peripheral clocks
-#define PMC_PCER0	(uint32_t)0x400E0410
 
 #define PID7		(1 << 7)	//UART0
 
