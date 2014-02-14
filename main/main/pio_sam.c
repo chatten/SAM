@@ -25,8 +25,9 @@ void hwPinPioConfig(pinPioConfig_t *pinPioConfig)
 {
 	//enable peripheral clock
 	Pmc *pmc = PMC;
-	//setRegBit(pmc->PMC_PCER0,PID9);
-	pmc->PMC_PCER0 |= PID9;
+
+	//TODO:	Add support for other ports 
+	pmc->PMC_PCER0 |= PMC_PCER0_PID9;		//PIOA
 
 
 	Pio *pio = pinPioConfig->port;
@@ -75,7 +76,7 @@ void hwPinPioWrite(Pio * port, uint32_t portPin, uint8_t state)
 
 uint32_t hwPinPioRead(Pio * port, uint32_t portPin)
 {
-	return (*((uint32_t *)(port->PIO_PDSR)) & (1 << portPin)) >> portPin ;
+	return (((port->PIO_PDSR) & (1 << portPin)) >> portPin) ;
 }
 
 

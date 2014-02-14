@@ -14,12 +14,13 @@
 #include "uart_sam.h"
 
 
+void delay();
 
 
 int main(void) {
 	// Disable the watchdog
 	WDT_MR = 0;
-	
+	uint32_t ret = 0;
 	
 	// Configure the PIO lines
 	pinPioConfig_t blueLED;
@@ -49,12 +50,7 @@ int main(void) {
 	pushButton4.dir = INPUT;
 	pushButton4.type = PIO;
 	hwPinPioConfig(&pushButton4);
-	
-
-
-
-
-	
+		
 	
 	// Blink the green LED
 	while(1) {
@@ -62,16 +58,16 @@ int main(void) {
 
 		hwPinPioWrite(PIOD,GREEN_LED_PIN,LOW);
 		hwPinPioWrite(PIOD,AMBER_LED_PIN,HIGH);
-		//ret = hwPinPioRead(PIOA, BP4_PIN);
+		
+		ret = hwPinPioRead(PIOA, BP4_PIN);
+		hwPinPioWrite(PIOA,BLUE_LED_PIN, (ret));
 		delay();
-		//hwPinPioWrite(PIOA,BLUE_LED_PIN, (ret));
-
+		
+		ret = hwPinPioRead(PIOA, BP4_PIN);
+		hwPinPioWrite(PIOA,BLUE_LED_PIN, (ret));
 		hwPinPioWrite(PIOD,GREEN_LED_PIN,HIGH);
 		hwPinPioWrite(PIOD,AMBER_LED_PIN,LOW);
-		delay();
-
-
-		
+		delay();		
 
 	}
 	
