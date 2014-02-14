@@ -51,6 +51,12 @@ int main(void) {
 	pushButton4.type = PIO;
 	hwPinPioConfig(&pushButton4);
 		
+		
+	//set up timer 
+	Tc *tc = TC0;
+	Pmc *pmc = PMC;
+	pmc->PMC_PCER0 |= PMC_PCER0_PID21;	//Enable TC0 Peripheral Clock
+	tc->
 	
 	// Blink the green LED
 	while(1) {
