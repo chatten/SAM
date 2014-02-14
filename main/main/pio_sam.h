@@ -8,7 +8,7 @@
 #include "hardwareDef.h"
 
 typedef struct {
-	volatile Pio * port;
+	Pio * port;
 	uint32_t portPin;
 	uint8_t dir;
 	uint8_t type;	//PIO or PER(PERIPHERIAL)
