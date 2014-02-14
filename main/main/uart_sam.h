@@ -9,7 +9,7 @@
 
 
 typedef struct {
-	uint32_t baseAddr;
+	Uart * port;
 	uint32_t baudrate;
 	uint8_t echo;
 	uint8_t stopBits;
@@ -20,6 +20,6 @@ typedef struct {
 
 void hwUartConfig(uartConfig_t *uartConfig);
 
-void hwUartPutChar(uint32_t baseAddr, uint8_t txData);
-uint8_t hwUartGetChar(uint32_t baseAddr);
+void hwUartPutChar(Uart * uart, uint8_t txData);
+uint8_t hwUartGetChar(Uart * uart);
 

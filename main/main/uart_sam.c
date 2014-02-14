@@ -1,6 +1,6 @@
 
 /*******************************************************************************
-*	Uart.c	     																*
+*	uart_sam.c	     															*
 *																				*
 *			   		                 											*
 *******************************************************************************/
@@ -9,42 +9,36 @@
 #include "hardware.h"
 
 
-
-
-
 /*******************************************************************************
 *	hwUartConfig	     														*
 *																				*
-*			   		                 											*
+*										   		             					*
 *******************************************************************************/
 
 void hwUartConfig(uartConfig_t *uartConfig)
 {
 	
 	Pmc *pmc = PMC;
+	Uart *uart = uartConfig->port;
 	
 	//The UART pins are multiplexed with PIO lines. The programmer must first configure the corresponding PIO Controller to
 	//enable I/O line operations of the UART.	
 	
 
 	/* Reset and disable receiver & transmitter */
+							
+	uart->UART_IDR |= 0x1FFF;					//disables uart interrupts
 			
-	setReg(uartConfig->baseAddr +UART_IDR, 0x1FFF);					//disables uart interrupts
-
-	setRegBit(uartConfig->baseAddr + UART_CR, RSTRX | RSTTX );		//reset uart
-	setRegBit(uartConfig->baseAddr + UART_CR, TXDIS | RXDIS);		//disable uart
+	uart->UART_CR |= (UART_CR_RSTRX | UART_CR_RSTTX);				//reset uart
+	uart->UART_CR |= (UART_CR_TXDIS | UART_CR_RXDIS);
 
 		//The UART clock is controllable through the Power Management Controller. In this case, the programmer must first
 	//configure the PMC to enable the UART clock. Usually, the peripheral identifier used for this purpose is 1.
 	//enable peripheral clock
-	
-	
-	//TODO  FIX THIS
-	setRegBit(pmc->PMC_PCER0, PID7 | PID10 | PID11 | PID12 | PID13);
+	pmc->PMC_PCER0 |= (PMC_PCER0_PID7 | PMC_PCER0_PID10 | PMC_PCER0_PID11 | PMC_PCER0_PID12 | PMC_PCER0_PID13);
 
 	/* Disable PDC channel (Peripheral DMA Controller Channels) */
-	setRegBit(uartConfig->baseAddr + UART_PTCR, TXTDIS | RXTDIS );
-	
+	uart->UART_PTCR |= (UART_PTCR_TXTDIS | UART_PTCR_RXTDIS);
 
 	
 	//Baud Rate = MCK / (16 X CD)
@@ -53,16 +47,15 @@ void hwUartConfig(uartConfig_t *uartConfig)
 
 
 	uint32_t cd = (MCK / uartConfig->baudrate) / 16;
-	setReg(uartConfig->baseAddr + UART_BRGR, cd);
-	setReg(uartConfig->baseAddr + UART_MR, 0x00000800 ); //Set for no parity
-
+	uart->UART_BRGR = cd;
+	uart->UART_MR = 0x00000800;  //Set for no parity
 	
 	//The transmitter is enabled
 	//by writing the control register UART_CR with the bit TXEN at 1.
-	clrRegBit(uartConfig->baseAddr + UART_CR, TXDIS | RXDIS);	
-	clrRegBit(uartConfig->baseAddr + UART_CR, RSTRX | RSTTX);	
+	uart->UART_CR &= ~(UART_CR_TXDIS | UART_CR_RXDIS);	
+	uart->UART_CR &= ~(UART_CR_RSTRX | UART_CR_RSTTX);
 
-	setRegBit(uartConfig->baseAddr + UART_CR, TXEN | RXEN );
+	uart->UART_CR |= (UART_CR_TXEN | UART_CR_RXEN);
 
 	//the transmitter waits for a character
 	//to be written in the Transmit Holding Register (UART_THR) before actually starting the transmission
@@ -79,13 +72,11 @@ void hwUartConfig(uartConfig_t *uartConfig)
 *	Returns Nothing																*
 *******************************************************************************/
 
-void hwUartPutChar(uint32_t baseAddr, uint8_t txData )
+void hwUartPutChar(Uart * uart, uint8_t txData )
 {
-     	while((getReg(baseAddr  + UART_SR) &  TXEMPTY) == 0)
-		;												//UART_THR = 1 = TX READY
-		
-			
-    	setReg(baseAddr + UART_THR, txData);
+     	while((uart->UART_SR &  UART_SR_TXEMPTY) == 0)
+		;												//UART_THR = 1 = TX READY		
+		uart->UART_THR |= txData;	
 }
 
 /*******************************************************************************
@@ -95,12 +86,12 @@ void hwUartPutChar(uint32_t baseAddr, uint8_t txData )
 *																				*
 *	returns 1 character															*
 *******************************************************************************/
-uint8_t hwUartGetChar(uint32_t baseAddr)
+uint8_t hwUartGetChar(Uart *uart)
 {
-	while((getReg(baseAddr  + UART_SR) &  RXRDY) == 0)    //wait for byte
+	while((uart->UART_SR &  UART_SR_RXRDY) == 0)    //wait for byte
 	;
 
-	return getReg(baseAddr  + UART_RHR);                        
+	return uart->UART_RHR;                        
 }
 
 
