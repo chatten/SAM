@@ -18,8 +18,9 @@ void delay();
 
 
 int main(void) {
-	// Disable the watchdog
-	WDT_MR = 0;
+	/* Disable the watchdog */
+	WDT->WDT_MR = WDT_MR_WDDIS;
+	
 	uint32_t ret = 0;
 	
 	// Configure the PIO lines
@@ -30,12 +31,14 @@ int main(void) {
 	blueLED.type = PIO;
 	hwPinPioConfig(&blueLED);
 	
-	pinPioConfig_t amberLED;
+	/*pinPioConfig_t amberLED;
 	amberLED.port = PIOD;
 	amberLED.portPin = AMBER_LED_PIN;
-	amberLED.dir = OUTPUT;
-	amberLED.type = PIO;
-	hwPinPioConfig(&amberLED);
+	amberLED.dir = PER;
+	amberLED.type = PER;
+	hwPinPioConfig(&amberLED);*/
+	Pio *pio = PIOD;
+	pio->PIO_PDR |= (1 << AMBER_LED_PIN);
 	
 	pinPioConfig_t greenLED;
 	greenLED.port = PIOD;
@@ -56,15 +59,51 @@ int main(void) {
 	Tc *tc = TC0;
 	Pmc *pmc = PMC;
 	pmc->PMC_PCER0 |= PMC_PCER0_PID21;	//Enable TC0 Peripheral Clock
-	tc->
+	//tc->
+	
+	
+	//=================================================================================
+	//PWM TEST FOR AMBER LED -SIGNAL ATTACHED TO PWMH0
+	
+	
+	//set up PWM
+	pmc->PMC_PCER1 |= PMC_PCER1_PID36;  //Enable PWM Peripheral Clock
+	Pwm *pwm = PWM;
+	//1. Select the manual write of duty-cycle values and the manual update by setting the UPDM field to 0 in the
+	//PWM_SCM register
+	pwm->PWM_SCM  &=  ~PWM_SCM_UPDM_MODE0;
+	
+	//TODO  -Decifer correct value for CLK
+	pwm->PWM_CLK =0x0101;
+	
+	//2. Define the synchronous channels by the SYNCx bits in the PWM_SCM register.
+	pwm->PWM_SCM &= ~PWM_SCM_SYNC0;  //Channel 0 is not a synchronous channel.
+	pwm->PWM_SCM &= ~PWM_SCM_SYNC1;  //Channel 1 is not a synchronous channel.
+	pwm->PWM_SCM &= ~PWM_SCM_SYNC2;  //Channel 2 is not a synchronous channel.
+	pwm->PWM_SCM &= ~PWM_SCM_SYNC3;  //Channel 3 is not a synchronous channel.
+	
+	//3. Enable the synchronous channels by writing CHID0 in the PWM_ENA register.
+	pwm->PWM_ENA |= PWM_ENA_CHID0;		//1 = Enable PWM output for channel x.
+	pwm->PWM_ENA &= ~PWM_ENA_CHID1;
+	pwm->PWM_ENA &= ~PWM_ENA_CHID2;
+	pwm->PWM_ENA &= ~PWM_ENA_CHID3;
+	
+	//4. If an update of the period value and/or the duty-cycle values and/or the dead-time values is required, write registers
+	//		that need to be updated (PWM_CPRDUPDx, PWM_CDTYUPDx and PWM_DTUPDx).
+	
+	REG_PWM_CPRDUPD0 = 100;		//period
+	REG_PWM_CDTYUPD0 = 0x0000;	//duty Cycle
+	
+	//5. Set UPDULOCK to 1 in PWM_SCUC.
+	pwm->PWM_SCUC |= PWM_SCUC_UPDULOCK;
+	
+	//==================================================================================
+	
 	
 	// Blink the green LED
 	while(1) {
 		
-
 		hwPinPioWrite(PIOD,GREEN_LED_PIN,LOW);
-		hwPinPioWrite(PIOD,AMBER_LED_PIN,HIGH);
-		
 		ret = hwPinPioRead(PIOA, BP4_PIN);
 		hwPinPioWrite(PIOA,BLUE_LED_PIN, (ret));
 		delay();
@@ -72,8 +111,9 @@ int main(void) {
 		ret = hwPinPioRead(PIOA, BP4_PIN);
 		hwPinPioWrite(PIOA,BLUE_LED_PIN, (ret));
 		hwPinPioWrite(PIOD,GREEN_LED_PIN,HIGH);
-		hwPinPioWrite(PIOD,AMBER_LED_PIN,LOW);
-		delay();		
+
+		delay();
+		REG_PWM_CDTYUPD0++;		
 
 	}
 	

@@ -33,8 +33,6 @@
 // Register Offsets
 
  
-// Watchdog Defines
-#define WDT_MR *((uint32_t *)0x400E1854)
  
  
 #endif

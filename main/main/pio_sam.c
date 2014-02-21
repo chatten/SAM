@@ -44,12 +44,12 @@ void hwPinPioConfig(pinPioConfig_t *pinPioConfig)
 		//disables interrupt
 		pio->PIO_IDR |= (1 << pinPioConfig->portPin);
 		//PIO Pull Up Enable Register
-		pio->PIO_PUER |= (1 << pinPioConfig->portPin);
+		//pio->PIO_PUER |= (1 << pinPioConfig->portPin);
 		//PIO Output Disable Register
 		pio->PIO_ODR |= (1 << pinPioConfig->portPin);		
 	}
 
-	if (pinPioConfig->type == PIO)  //enable PIO or PERPHERIAL
+	if (pinPioConfig->type == PIO)  //enable PIO or PER(PERPHERIAL)
 	{
 		pio->PIO_PER |= (1 << pinPioConfig->portPin);
 	}else
