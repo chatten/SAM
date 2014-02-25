@@ -31,14 +31,8 @@ int main(void) {
 	blueLED.type = PIO;
 	hwPinPioConfig(&blueLED);
 	
-	/*pinPioConfig_t amberLED;
-	amberLED.port = PIOD;
-	amberLED.portPin = AMBER_LED_PIN;
-	amberLED.dir = PER;
-	amberLED.type = PER;
-	hwPinPioConfig(&amberLED);*/
-	Pio *pio = PIOD;
-	pio->PIO_PDR |= (1 << AMBER_LED_PIN);
+
+
 	
 	pinPioConfig_t greenLED;
 	greenLED.port = PIOD;
@@ -64,6 +58,18 @@ int main(void) {
 	
 	//=================================================================================
 	//PWM TEST FOR AMBER LED -SIGNAL ATTACHED TO PWMH0
+	
+	Pio *pio = PIOD;
+	pio->PIO_PDR |= (1 << AMBER_LED_PIN);
+	
+	
+	//Set to peripheral A 
+	pio->PIO_ABCDSR[0] &= ~(1 << AMBER_LED_PIN);
+	pio->PIO_ABCDSR[1] &= ~(1 << AMBER_LED_PIN);
+	
+	//Enable Output
+	pio->PIO_OER |= (1 << AMBER_LED_PIN);
+	
 	
 	
 	//set up PWM
@@ -96,6 +102,7 @@ int main(void) {
 	
 	//5. Set UPDULOCK to 1 in PWM_SCUC.
 	pwm->PWM_SCUC |= PWM_SCUC_UPDULOCK;
+	int dutyCycle = 0;
 	
 	//==================================================================================
 	
@@ -107,13 +114,24 @@ int main(void) {
 		ret = hwPinPioRead(PIOA, BP4_PIN);
 		hwPinPioWrite(PIOA,BLUE_LED_PIN, (ret));
 		delay();
+		dutyCycle += 10;
+		REG_PWM_CDTYUPD0 = dutyCycle;
 		
 		ret = hwPinPioRead(PIOA, BP4_PIN);
 		hwPinPioWrite(PIOA,BLUE_LED_PIN, (ret));
 		hwPinPioWrite(PIOD,GREEN_LED_PIN,HIGH);
 
 		delay();
-		REG_PWM_CDTYUPD0++;		
+		if (dutyCycle > 0x64)
+		{
+			dutyCycle = 0;	
+		}else 
+		{
+			dutyCycle += 10;
+		}
+		
+		
+		REG_PWM_CDTYUPD0 = dutyCycle;		
 
 	}
 	
